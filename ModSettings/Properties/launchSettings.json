@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Launch Mod": {
+      "commandName": "Executable",
+      "executablePath": "$(AppPath)$(AppName).exe",
+      "commandLineArgs": "-Screen -Invisible -LoadAssembly \"Libraries/$(AppName)ModLoader.dll\" -DontAutoOpenCloudHome -Config Config.json",
+      "workingDirectory": "$(AppPath)"
+    },
+    "Launch Mod in VR": {
+      "commandName": "Executable",
+      "executablePath": "$(AppPath)$(AppName).exe",
+      "commandLineArgs": "-Invisible -LoadAssembly \"Libraries/$(AppName)ModLoader.dll\" -DontAutoOpenCloudHome -Config Config.json",
+      "workingDirectory": "$(AppPath)"
+    }
+  }
+}
