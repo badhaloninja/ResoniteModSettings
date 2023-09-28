@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.0.1";
+        public override string Version => "2.0.2";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -474,7 +474,7 @@ namespace ModSettings
                 }
 
 
-                var i = 0;
+                var createdItemCount = 0;
                 foreach (ModConfigurationKey key in foundKeys)
                 { // Generate field for every supported config
                     var item = GenerateConfigFieldOfType(key.ValueType(), ui, SelectedMod, config, key);
@@ -484,9 +484,8 @@ namespace ModSettings
                     item.ForeachComponentInChildren<Button>(button => button.RequireLockInToPress.Value = true);
 
 
-
-                    if (!Config.GetValue(HIGHLIGHT_ITEMS) && config != Config) continue;
-                    if (i % 2 == 1)
+                    bool shouldShowItemBg = !Config.GetValue(HIGHLIGHT_ITEMS) || config == Config;
+                    if (shouldShowItemBg && createdItemCount % 2 == 1)
                     {
                         var bg = item.AddSlot("Background");
                         bg.ActiveSelf_Field.DriveFromVariable(ConfigKeyVariableNames[HIGHLIGHT_ITEMS]);
@@ -498,12 +497,9 @@ namespace ModSettings
                         rect.AnchorMax.Value = new float2(1.005f, 1f);
                         bg.AttachComponent<Image>().Tint.DriveFromVariable(ConfigKeyVariableNames[HIGHLIGHT_TINT]);
                     }
-                    i++;
+                    createdItemCount++;
                 }
-                if(i != 0)
-                {
-                    configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.HasKeys", true);
-                }
+                if(createdItemCount != 0) configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.HasKeys", true);
             }
 
             public static Slot GenerateConfigFieldOfType(Type type, UIBuilder ui, string ModName, ModConfiguration config, ModConfigurationKey key)
