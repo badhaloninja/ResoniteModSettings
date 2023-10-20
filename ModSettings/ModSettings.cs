@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.0.2";
+        public override string Version => "2.1.0";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -72,12 +72,15 @@ namespace ModSettings
                     throw new ArgumentNullException(nameof(str));
                 return true;
             });
+            [Range(0,1)]
+            [AutoRegisterConfigKey]
+            private static readonly ModConfigurationKey<float> TEST_SLIDER = new("testSlider", "Test Slider", () => 0f);
         //
 
         private static ModSettings Current;
         private static ModConfiguration Config;
         private static RadiantDashScreen CurrentScreen;
-        private static readonly Dictionary<string, ResoniteModBase> foundModsDictionary = new();
+        private static readonly Dictionary<string, FoundMod> foundModsDictionary = new();
 
         private static Slot configKeysRootSlot;
         private static Slot modButtonsRoot;
@@ -377,22 +380,23 @@ namespace ModSettings
                 }
                 bool haveModsBeenListed = foundModsDictionary.Count == 0;
 
-                foreach (ResoniteModBase mod in ModLoader.Mods())
+                foreach (ResoniteModBase modBase in ModLoader.Mods())
                 {
-                    string modKey = $"{mod.Author}.{mod.Name}";
+                    var mod = new FoundMod(modBase);
+                    string modKey = $"{modBase.Author}.{modBase.Name}";
 
                     // To prevent adding mods multiple times if the screen is regenerated
                     if (haveModsBeenListed) foundModsDictionary.Add(modKey, mod);
 
-                    var button = ui.Button(mod.Name);
+                    var button = ui.Button(modBase.Name);
 
                     // Adds a little bit of padding to the text, to prevent long mod names from touching the edges
                     var textRect = button.Slot[0].GetComponent<RectTransform>();
                     textRect.OffsetMin.Value = new float2(24, 0);
                     textRect.OffsetMax.Value = new float2(-24, 0);
 
-                    var deselected = new OptionDescription<string>(null, label: mod.Name, buttonColor: RadiantUI_Constants.BUTTON_COLOR);
-                    var selected = new OptionDescription<string>(modKey, label: mod.Name, buttonColor: RadiantUI_Constants.HIGHLIGHT_COLOR);
+                    var deselected = new OptionDescription<string>(null, label: modBase.Name, buttonColor: RadiantUI_Constants.BUTTON_COLOR);
+                    var selected = new OptionDescription<string>(modKey, label: modBase.Name, buttonColor: RadiantUI_Constants.HIGHLIGHT_COLOR);
 
                     button.ConvertTintToAdditive();
                     button.SetupValueToggle(dVar.Value, modKey, selected, deselected);
@@ -402,17 +406,22 @@ namespace ModSettings
                     int validKeyCount = 0;
                     bool allValidKeysInternal = false;
 
-                    if (mod.GetConfiguration() != null)
+                    if (modBase.GetConfiguration() != null)
                     {
-                        var validKeys = mod.GetConfiguration()?.ConfigurationItemDefinitions
+                        var validKeys = modBase.GetConfiguration()?.ConfigurationItemDefinitions
                             ?.Where(c => c.ValueType() == typeof(Type) || (bool)typeof(DynamicValueVariable<>).MakeGenericType(c.ValueType()).GetProperty("IsValidGenericType").GetValue(null));
 
                         validKeyCount = validKeys.Count();
 
                         allValidKeysInternal = validKeys.All(c => c.InternalAccessOnly);
+
+                        // Go over the fields to store the config field info
+                        var fields = AccessTools.GetDeclaredFields(mod.Owner.GetType());
+                        fields.Where(field => Attribute.GetCustomAttribute(field, typeof(AutoRegisterConfigKeyAttribute)) != null) // Only get the config key fields
+                            .Do(field => mod.ConfigKeyFields.Add((ModConfigurationKey)field.GetValue(field.IsStatic ? null : mod.Owner), field)); // Store the fields with their keys
                     }
 
-                    Debug($"{mod.Name} has {validKeyCount} available config items");
+                    Debug($"{modBase.Name} has {validKeyCount} available config items");
 
                     if (validKeyCount == 0)
                     {
@@ -445,15 +454,15 @@ namespace ModSettings
                 configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Version", "");
                 configKeysRootSlot.TryWriteDynamicValue<Uri>("Config/SelectedMod.Uri", null);
 
-                if (string.IsNullOrWhiteSpace(SelectedMod) || !foundModsDictionary.TryGetValue(SelectedMod, out ResoniteModBase mod) || mod == null)
+                if (string.IsNullOrWhiteSpace(SelectedMod) || !foundModsDictionary.TryGetValue(SelectedMod, out FoundMod mod) || mod == null)
                     return; // Skip if no mod is selected
 
                 // Set footer values
-                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Name", mod.Name);
-                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Author", mod.Author);
-                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Version", mod.Version);
+                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Name", mod.Owner.Name);
+                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Author", mod.Owner.Author);
+                configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Version", mod.Owner.Version);
 
-                Uri.TryCreate(mod.Link, UriKind.RelativeOrAbsolute, out Uri modUri); // Catch invalid uris just incase
+                Uri.TryCreate(mod.Owner.Link, UriKind.RelativeOrAbsolute, out Uri modUri); // Catch invalid uris just incase
                 configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.Uri", modUri);
 
 
@@ -462,7 +471,7 @@ namespace ModSettings
 
                 ui.Style.PreferredHeight = Config.GetValue(ITEM_HEIGHT);
 
-                ModConfiguration config = mod.GetConfiguration();
+                ModConfiguration config = mod.Config;
 
 
                 var foundKeys = config?.ConfigurationItemDefinitions.Where(key => config == Config || !key.InternalAccessOnly || Config.GetValue(SHOW_INTERNAL));
@@ -513,7 +522,7 @@ namespace ModSettings
             {
                 bool isType = typeof(T) == typeof(Type);
                 if (!(isType || DynamicValueVariable<T>.IsValidGenericType)) return null; // Check if supported type
-
+                
                 if (isType) Debug($"GenerateConfigField for type Type");
 
                 string configName = $"{ModName}.{key.Name}";
@@ -527,7 +536,8 @@ namespace ModSettings
                 ui.NestInto(root);
 
                 SyncField<T> syncField;
-                FieldInfo fieldInfo;
+                FieldInfo fieldInfo = foundModsDictionary[ModName]?.ConfigKeyFields[key];
+
 
                 if (!isType)
                 {
@@ -535,7 +545,7 @@ namespace ModSettings
                     dynvar.VariableName.Value = $"Config/{configName}";
 
                     syncField = dynvar.Value;
-                    fieldInfo = dynvar.GetSyncMemberFieldInfo(4);
+                    fieldInfo ??= dynvar.GetSyncMemberFieldInfo(4);
                 } else
                 {
                     var dynvar = root.AttachComponent<DynamicReferenceVariable<SyncType>>();
@@ -545,7 +555,7 @@ namespace ModSettings
                     dynvar.Reference.TrySet(typeField.Type);
 
                     syncField = typeField.Type as SyncField<T>;
-                    fieldInfo = typeField.GetSyncMemberFieldInfo(3);
+                    fieldInfo ??= typeField.GetSyncMemberFieldInfo(3);
                 }
 
 
@@ -578,6 +588,9 @@ namespace ModSettings
 
                 var internalFormat = "{0}";
                 if (key.InternalAccessOnly) internalFormat = $"<color={RadiantUI_Constants.Hero.YELLOW_HEX}>{{0}}</color>";
+
+
+
 
                 // Build ui
                 
@@ -723,18 +736,18 @@ namespace ModSettings
             {
                 Debug("Save All Configs");
                 int errCount = 0;
-                foreach (ResoniteModBase mod in foundModsDictionary.Values)
+                foreach (FoundMod mod in foundModsDictionary.Values)
                 { // Iterate over every mod with configs
-                    if (mod.GetConfiguration() == null) continue;
-                    Debug($"Saving Config for {mod.Name}");
+                    if (mod.Config == null) continue;
+                    Debug($"Saving Config for {mod.Owner.Name}");
                     try
                     {
-                        mod.GetConfiguration().Save(); // Save config
+                        mod.Config.Save(); // Save config
                     }
                     catch (Exception e)
                     {
                         errCount++;
-                        Error($"Failed to save Config for {mod.Name}");
+                        Error($"Failed to save Config for {mod.Owner.Name}");
                         Error(e);
                     }
                 }
@@ -765,14 +778,14 @@ namespace ModSettings
             private static void SaveCurrentConfig(IButton button, ButtonEventData data)
             {
                 button.Slot.TryReadDynamicValue("Config/SelectedMod", out string selectedMod);
-                if (string.IsNullOrWhiteSpace(selectedMod) || !foundModsDictionary.TryGetValue(selectedMod, out ResoniteModBase mod) || mod == null || mod.GetConfiguration() == null)
+                if (string.IsNullOrWhiteSpace(selectedMod) || !foundModsDictionary.TryGetValue(selectedMod, out FoundMod mod) || mod == null || mod.Config == null)
                     return;
                 button.LabelText = "Saving"; // Saves so fast this might be unnecessary 
 
-                Debug($"Saving Config for {mod.Name}");
+                Debug($"Saving Config for {mod.Owner.Name}");
                 try
                 {
-                    mod.GetConfiguration().Save(); // Save config
+                    mod.Config.Save(); // Save config
                     button.LabelText = "Saved!"; // Show Saved! for 1 second
 
                     button.RunInSeconds(1f, () => button.LabelText = "Save Settings");
@@ -786,7 +799,7 @@ namespace ModSettings
                         button.Enabled = true;
                         button.LabelText = "Save Settings";
                     });
-                    Error($"Failed to save Config for {mod.Name}");
+                    Error($"Failed to save Config for {mod.Owner.Name}");
                     Error(e);
                 }
             }
@@ -795,9 +808,9 @@ namespace ModSettings
             private static void ResetCurrentConfig(IButton button, ButtonEventData data)
             {
                 button.Slot.TryReadDynamicValue("Config/SelectedMod", out string selectedMod);
-                if (string.IsNullOrWhiteSpace(selectedMod) || !foundModsDictionary.TryGetValue(selectedMod, out ResoniteModBase mod) || mod == null || mod.GetConfiguration() == null)
+                if (string.IsNullOrWhiteSpace(selectedMod) || !foundModsDictionary.TryGetValue(selectedMod, out FoundMod mod) || mod == null || mod.Config == null)
                     return;
-                var config = mod.GetConfiguration();
+                var config = mod.Config;
 
                 bool resetInternal = Config.GetValue(RESET_INTERNAL);
                 foreach (ModConfigurationKey key in config.ConfigurationItemDefinitions)
