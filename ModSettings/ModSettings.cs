@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.0";
+        public override string Version => "2.1.1";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -203,13 +203,23 @@ namespace ModSettings
 
 
                 ui.NestInto(footer);
+
+                var offset = new float2(8f, 8f);
+                footer.OffsetMin.Value += offset;
+                footer.OffsetMax.Value += -offset;
+
                 var splits = ui.SplitHorizontally(0.25f, 0.55f, 0.25f);
 
                 ui.NestInto(splits[0]); //Author (Left)
                 ui.Text(Current.Author)
                     .Content.SyncWithVariable("Config/SelectedMod.Author");
 
+                splits[0].OffsetMin.Value += offset.x_;
+                splits[0].OffsetMax.Value += -offset.x_;
+
                 ui.NestInto(splits[1]); //Link (Center)
+                splits[1].OffsetMin.Value += offset.x_;
+                splits[1].OffsetMax.Value += -offset.x_;
 
                 var linkText = ui.Text("");
                 var hyperlink = linkText.Slot.AttachComponent<Hyperlink>();
@@ -219,6 +229,8 @@ namespace ModSettings
                 hyperlinkButton.SetupBackgroundColor(linkText.Color); // Drive the text color
 
                 ui.NestInto(splits[2]); // Version (Right)
+                splits[2].OffsetMin.Value += offset.x_;
+                splits[2].OffsetMax.Value += -offset.x_;
 
                 var versionText = ui.Text(Current.Version);
                 versionText.Content.SyncWithVariable("Config/SelectedMod.Version");
@@ -327,12 +339,23 @@ namespace ModSettings
 
 
                 ui.NestInto(footer);
+                var offset = new float2(8f, 8f);
+                ui.CurrentRect.OffsetMin.Value += offset;
+                ui.CurrentRect.OffsetMax.Value += -offset;
+
                 var splits = ui.SplitHorizontally(0.25f, 0.55f, 0.25f);
 
+
                 ui.NestInto(splits[0]); //Author (Left)
+                splits[0].OffsetMin.Value += offset.x_;
+                splits[0].OffsetMax.Value += -offset.x_;
+
                 ui.Text(Current.Author);
 
+
                 ui.NestInto(splits[1]); //Link (Center)
+                splits[1].OffsetMin.Value += offset.x_;
+                splits[1].OffsetMax.Value += -offset.x_;
 
                 var linkText = ui.Text(Current.Link);
                 var hyperlink = linkText.Slot.AttachComponent<Hyperlink>();
@@ -341,11 +364,12 @@ namespace ModSettings
                 var hyperlinkButton = linkText.Slot.AttachComponent<Button>();
                 hyperlinkButton.SetupBackgroundColor(linkText.Color); // Drive the text color
 
+                
                 ui.NestInto(splits[2]); // Version (Right)
+                splits[2].OffsetMin.Value += offset.x_;
+                splits[2].OffsetMax.Value += -offset.x_;
 
                 var versionText = ui.Text(Current.Version);
-
-
 
 
                 ui.NestInto(descRoot.Parent); // Go up one from Info
@@ -382,11 +406,10 @@ namespace ModSettings
 
                 foreach (ResoniteModBase modBase in ModLoader.Mods())
                 {
-                    var mod = new FoundMod(modBase);
                     string modKey = $"{modBase.Author}.{modBase.Name}";
 
                     // To prevent adding mods multiple times if the screen is regenerated
-                    if (haveModsBeenListed) foundModsDictionary.Add(modKey, mod);
+                    if (haveModsBeenListed) foundModsDictionary.Add(modKey, new FoundMod(modBase));
 
                     var button = ui.Button(modBase.Name);
 
@@ -414,11 +437,6 @@ namespace ModSettings
                         validKeyCount = validKeys.Count();
 
                         allValidKeysInternal = validKeys.All(c => c.InternalAccessOnly);
-
-                        // Go over the fields to store the config field info
-                        var fields = AccessTools.GetDeclaredFields(mod.Owner.GetType());
-                        fields.Where(field => Attribute.GetCustomAttribute(field, typeof(AutoRegisterConfigKeyAttribute)) != null) // Only get the config key fields
-                            .Do(field => mod.ConfigKeyFields.Add((ModConfigurationKey)field.GetValue(field.IsStatic ? null : mod.Owner), field)); // Store the fields with their keys
                     }
 
                     Debug($"{modBase.Name} has {validKeyCount} available config items");
@@ -493,7 +511,7 @@ namespace ModSettings
                     item.ForeachComponentInChildren<Button>(button => button.RequireLockInToPress.Value = true);
 
 
-                    bool shouldShowItemBg = !Config.GetValue(HIGHLIGHT_ITEMS) || config == Config;
+                    bool shouldShowItemBg = Config.GetValue(HIGHLIGHT_ITEMS) || config == Config;
                     if (shouldShowItemBg && createdItemCount % 2 == 1)
                     {
                         var bg = item.AddSlot("Background");
