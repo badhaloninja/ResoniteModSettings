@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.2";
+        public override string Version => "2.1.3";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -109,7 +109,7 @@ namespace ModSettings
             ModConfiguration.OnAnyConfigurationChanged += OnConfigurationChanged;
             Config.OnThisConfigurationChanged += OnThisConfigurationChanged;
 
-            Harmony harmony = new("me.badhaloninja.ModSettings");
+            Harmony harmony = new("ninja.badhalo.ModSettings");
             harmony.PatchAll();
         }
 

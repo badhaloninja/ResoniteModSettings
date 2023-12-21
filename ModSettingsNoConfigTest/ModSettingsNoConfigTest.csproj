@@ -1,43 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../SharedModSettings.csproj" />
   <PropertyGroup>
-
-    <AppName>Resonite</AppName>
-    <ModLoaderShort>rml</ModLoaderShort>
-
     <ProjectGuid>{DB44E605-134D-48B5-A629-E65B84BCCC36}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ModSettingsInternalOnlyTest</RootNamespace>
-    <AssemblyTitle>ModSettingsInternalOnlyTest</AssemblyTitle>
 
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    
-    
-    <AppPath>$(MSBuildThisFileDirectory)$(AppName)</AppPath>
-    <AppPath Condition="Exists('E:\Programs\Steam\steamapps\common\$(AppName)')">E:\Programs\Steam\steamapps\common\$(AppName)\</AppPath>
-    <AppPath Condition="Exists('E:\SteamLibrary\steamapps\common\$(AppName)')">E:\SteamLibrary\steamapps\common\$(AppName)\</AppPath>
-    <AppPath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/$(AppName)/')">$(HOME)/.steam/steam/steamapps/common/$(AppName)/</AppPath>
-    <AppPath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\$(AppName)\')">C:\Program Files (x86)\Steam\steamapps\common\$(AppName)\</AppPath>
+    <RootNamespace>ModSettingsTests</RootNamespace>
+    <AssemblyTitle>ModSettingsNoConfigTest</AssemblyTitle>
+    <AssemblyName>$(AssemblyTitle)</AssemblyName>
 
-    <CopyLocal>false</CopyLocal>
-    <CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-    <DebugSymbols Condition="'$(Configuration)'=='Release'">false</DebugSymbols>
-    <DebugType Condition="'$(Configuration)'=='Release'">None</DebugType>
+    
+    <Version>1.0.0</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="$(AppName)ModLoader">
-      <HintPath>$(AppPath)$(AppName)ModLoader.dll</HintPath>
-      <HintPath>$(AppPath)Libraries\$(AppName)ModLoader.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AppPath)$(ModLoaderShort)_mods" />
-    <Message Text="Copied $(TargetFileName) to $(AppPath)$(ModLoaderShort)_mods" Importance="high" />
-  </Target>
 </Project>

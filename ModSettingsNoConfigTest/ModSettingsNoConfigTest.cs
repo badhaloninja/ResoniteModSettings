@@ -7,6 +7,6 @@ namespace ModSettingsTests
         public override string Name => "ModSettingsTests-No config items";
         public override string Author => "badhaloninja";
         public override string Version => "1.0.0";
-        public override string Link => "https://github.com/badhaloninja/ModSettingsTests";
+        public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
     }
 }
