@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Globalization;
+using System.Dynamic;
+using System.Linq.Expressions;
 
 namespace ModSettings
 {
@@ -77,8 +80,8 @@ namespace ModSettings
             private static readonly ModConfigurationKey<float> TEST_SLIDER = new("testSlider", "Test Slider", () => 0f);
         //
 
-        private static ModSettings Current;
-        private static ModConfiguration Config;
+        internal static ModSettings Current;
+        internal static ModConfiguration Config;
         private static RadiantDashScreen CurrentScreen;
         private static readonly Dictionary<string, FoundMod> foundModsDictionary = new();
 
@@ -111,7 +114,28 @@ namespace ModSettings
 
             Harmony harmony = new("ninja.badhalo.ModSettings");
             harmony.PatchAll();
+
+            SettingsDataFeedInjector.SettingsInjection.PatchOtherMethods(harmony);
+            SettingsDataFeedInjector.InjectCategory(SettingCategoryDefinitions.Mods, "Mods");
         }
+
+       /* private static FieldInfo worker_assemblies;
+        private void WorkerInjector(Assembly assembly)
+        {
+            if (worker_assemblies == null)
+            {
+                worker_assemblies = AccessTools.Field(typeof(WorkerInitializer), "assemblies");
+            }
+
+            Assembly[] assemblies = (Assembly[])worker_assemblies.GetValue(null);
+
+            var hashset = assemblies.ToHashSet();
+
+            hashset.Add(assembly);
+
+            worker_assemblies.SetValue(null, hashset.ToArray());
+        }*/
+       
 
         [HarmonyPatch(typeof(UserspaceScreensManager))]
         static class Patches

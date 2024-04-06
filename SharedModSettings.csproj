@@ -47,6 +47,9 @@
     <Reference Include="Elements.Core">
       <HintPath>$(AppData)Elements.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Elements.Quantity">
+      <HintPath>$(AppData)Elements.Quantity.dll</HintPath>
+    </Reference>
     <Reference Include="FrooxEngine">
       <HintPath>$(AppData)FrooxEngine.dll</HintPath>
     </Reference>
@@ -54,8 +57,14 @@
       <HintPath>$(AppPath)$(AppName)ModLoader.dll</HintPath>
       <HintPath>$(AppPath)Libraries\$(AppName)ModLoader.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <HintPath>$(AppData)Microsoft.CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System.Memory">
       <HintPath>$(AppData)System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple">
+      <HintPath>$(AppData)System.ValueTuple.dll</HintPath>
     </Reference>
   </ItemGroup>
 
