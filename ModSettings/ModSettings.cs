@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.4";
+        public override string Version => "2.1.5";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -64,7 +64,7 @@ namespace ModSettings
             [AutoRegisterConfigKey]
             private static readonly ModConfigurationKey<float2x2> TEST_NAN_VECTOR_INTERNAL = new("testNanVectorInternal", "Test internal access only NaN Vector for pr #11", () => new float2x2(float.NaN, float.NaN, float.NaN, float.NaN), true);
             [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<string> TEST_LOCAL_KEY = new("testLocaleKey", "Settings.Locale.ChangeLanguage", () => "Locale Test", true, (str) => str == "Locale Test");
+            private static readonly ModConfigurationKey<string> TEST_LOCAL_KEY = new("testLocaleKey", "Settings.LocaleSettings", () => "Locale Test", true, (str) => str == "Locale Test");
             [AutoRegisterConfigKey]
             private static readonly ModConfigurationKey<string> TEST_ERROR_ON_STR_EMPTY = new("testErrOnStringEmpty", "Test error on string empty", () => "Value", valueValidator: (str) =>
             {
@@ -318,6 +318,11 @@ namespace ModSettings
                     }
                     catch (Exception e) { Error(e); }
                 };
+
+                var vrActiveSync = screenSlot.AttachComponent<DynamicValueVariable<bool>>();
+                vrActiveSync.VariableName.Value = "vr_active";
+                vrActiveSync.Value.Value = vrActiveSync.InputInterface.VR_Active;
+                vrActiveSync.InputInterface.VRActiveChanged += (state) => vrActiveSync.RunSynchronously(()=>vrActiveSync.Value.Value = state);
             }
             private static void BuildInfoPage(UIBuilder ui, out RectTransform content)
             {
@@ -616,7 +621,10 @@ namespace ModSettings
                 var localized = new LocaleString(localeText, string.Format(internalFormat,format), true, true, null);
                 ui.HorizontalElementWithLabel<Component>(localized, 0.7f, () =>
                 {// Using HorizontalElementWithLabel because it formats nicer than SyncMemberEditorBuilder with text
-                    if(config == Config && !nameAsKey)
+                    // Get first split, then Text in that split
+                    Slot nameSlot = ui.Root.Parent[0][0];
+
+                    if (config == Config && !nameAsKey)
                     {
                         var localeDriver = root.GetComponentInChildren<LocaleStringDriver>();
                         if(localeDriver != null)
@@ -637,8 +645,42 @@ namespace ModSettings
 
                     ui.Style.FlexibleWidth = 10f;
                     
-                    SyncMemberEditorBuilder.Build(syncField, null, fieldInfo, ui); // Using null for name makes it skip generating text
+                    SyncMemberEditorBuilder.Build(syncField, null, fieldInfo, ui, 0f); // Using null for name makes it skip generating text
                     ui.Style.FlexibleWidth = -1f;
+
+                    var memberActions = ui.Root[0]?.GetComponentInChildren<InspectorMemberActions>()?.Slot;
+                    if (memberActions != null && typeof(T) == typeof(dummy)) {
+                        memberActions.Destroy();
+                    }
+                    if (memberActions != null && nameSlot != null && typeof(T) != typeof(dummy))
+                    {
+                        // Prevent desktop user getting stuck with context menu open
+                        var vrSync = memberActions.AttachComponent<DynamicValueVariableDriver<bool>>();
+                        vrSync.Target.TrySet(memberActions.ActiveSelf_Field);
+                        vrSync.VariableName.Value = "vr_active";
+                        
+                        memberActions.Parent = nameSlot.Parent;
+                        memberActions.OrderOffset = -1;
+
+                        var layout = memberActions.AttachComponent<LayoutElement>();
+
+                        layout.PreferredHeight.Value = Config.GetValue(ITEM_HEIGHT);
+                        layout.MinHeight.Value = Config.GetValue(ITEM_HEIGHT);
+                        layout.MinWidth.Value = Config.GetValue(ITEM_HEIGHT);
+
+                        nameSlot.CopyComponent(layout);
+
+                        var horizontal = nameSlot.Parent.AttachComponent<HorizontalLayout>();
+                        horizontal.Spacing.Value = 8f;
+                        horizontal.HorizontalAlign.Value = LayoutHorizontalAlignment.Left;
+                        horizontal.ForceExpand = false;
+
+                        nameSlot.AttachComponent<Button>();
+                        nameSlot.AttachComponent<FieldDriveReceiver<T>>().TryAssignField(syncField);
+                        nameSlot.AttachComponent<ValueReceiver<T>>().TryAssignField(syncField);
+
+                        //((IValueFieldProxySource)memberActions.AttachComponent<ValueFieldProxySource<T>>()).Field = syncField;
+                    }
 
                     // Update the root layout element so I don't need to do checks for every field size
                     var fieldElement = ui.Root[0]?.GetComponent<LayoutElement>();
@@ -658,14 +700,6 @@ namespace ModSettings
                             layout.MinHeight.Value = Config.GetValue(ITEM_HEIGHT);
                         }
                     }
-
-
-                    ui.Root.ForeachComponentInChildren<Text>((text) =>
-                    { // Make value path text readable
-                        // XYZW, RGBA, etc.
-                        if (text.Slot.Parent.GetComponent<Button>() != null) return; // Ignore text under buttons
-                        text.Color.Value = RadiantUI_Constants.TEXT_COLOR;
-                    });
 
                     AddResetKeyButton(ui, config, typedKey);
                     ui.NestOut();
