@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.5";
+        public override string Version => "2.1.6";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -881,7 +881,11 @@ namespace ModSettings
                 fireConfigurationChangedEventMethod.Invoke(config, new object[] { key, _internalConfigResetLabel });
 
                 // Get default type
-                object value = key.TryComputeDefault(out object defaultValue) ? defaultValue : key.ValueType().GetDefaultValue(); // How did I miss this extension??
+                if (!key.TryComputeDefault(out object value))
+                {
+                    // Resolve ambiguous extension method for GetDefaultValue
+                    value = ReflectionExtensions.GetDefaultValue(key.ValueType());//.GetDefaultValue();
+                }
 
                 configKeysRootSlot.TryWriteDynamicValueOfType(key.ValueType(), $"Config/{config.Owner.Name}.{key.Name}", value);
             }

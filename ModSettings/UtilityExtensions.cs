@@ -38,7 +38,7 @@ namespace ModSettings
 			DynamicVariableSpace dynamicVariableSpace = root.FindSpace(spaceName);
 			if (dynamicVariableSpace == null) return false;
 
-			return dynamicVariableSpace.TryWriteValue(text, value);
+			return dynamicVariableSpace.TryWriteValue(text, value) == DynamicVariableWriteResult.Success;
 		}
 		public static bool TryWriteDynamicType(this Slot root, string name, Type value)
 		{
