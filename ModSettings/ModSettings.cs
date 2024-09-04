@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.6";
+        public override string Version => "2.1.7";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -80,7 +80,7 @@ namespace ModSettings
         private static ModSettings Current;
         private static ModConfiguration Config;
         private static RadiantDashScreen CurrentScreen;
-        private static readonly Dictionary<string, FoundMod> foundModsDictionary = new();
+        private static readonly Dictionary<string, FoundMod> foundModsDictionary = [];
 
         private static Slot configKeysRootSlot;
         private static Slot modButtonsRoot;
@@ -126,8 +126,8 @@ namespace ModSettings
             public static void OnLoading(UserspaceScreensManager __instance) => ModSettingsScreen.GenerateModSettingsScreen(__instance);
 
             [HarmonyReversePatch]
-            [HarmonyPatch(typeof(RadiantDashScreen), "BuildBackground")] // This method is protected for some reason
-            public static void BuildScreenBackground(RadiantDashScreen instance, UIBuilder ui) => throw new NotImplementedException("It's a stub");
+            [HarmonyPatch(typeof(RadiantDashScreen), "BuildBackground", argumentTypes: [typeof(UIBuilder), typeof(bool)])] // This method is protected for some reason
+            public static void BuildScreenBackground(RadiantDashScreen instance, UIBuilder ui, bool nest = true) => throw new NotImplementedException("It's a stub");
         }
 
         static class ModSettingsScreen
@@ -537,7 +537,7 @@ namespace ModSettings
             public static Slot GenerateConfigFieldOfType(Type type, UIBuilder ui, string ModName, ModConfiguration config, ModConfigurationKey key)
             { // Generics go brr
                 var genMethod = generateConfigFieldMethod.MakeGenericMethod(type); // Convert to whatever type requested
-                object[] args = new object[] { ui, ModName, config, key }; // Pass the arguments
+                object[] args = [ui, ModName, config, key]; // Pass the arguments
                 
                 return (Slot)genMethod.Invoke(null, args); // Run the method
             }
@@ -878,7 +878,7 @@ namespace ModSettings
                 config.Unset(key);
 
                 // Unset does not trigger the config changed event
-                fireConfigurationChangedEventMethod.Invoke(config, new object[] { key, _internalConfigResetLabel });
+                fireConfigurationChangedEventMethod.Invoke(config, [key, _internalConfigResetLabel]);
 
                 // Get default type
                 if (!key.TryComputeDefault(out object value))

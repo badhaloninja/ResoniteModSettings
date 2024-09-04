@@ -77,7 +77,7 @@ namespace ModSettings
 			if (type == typeof(Type)) return root.TryWriteDynamicType(name, (Type)value);
 
 			var genMethod = tryWriteDynamicValueMethod.MakeGenericMethod(type);
-			object[] args = new object[] { root, name, value };
+			object[] args = [root, name, value];
 			
 			return (bool)genMethod.Invoke(null, args);
         }
