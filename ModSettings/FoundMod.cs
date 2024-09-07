@@ -29,7 +29,7 @@ namespace ModSettings
         public ResoniteModBase Owner { get; private set; }
         public ModConfiguration Config { get => Owner.GetConfiguration(); }
 
-        public Dictionary<ModConfigurationKey, FieldInfo> ConfigKeyFields { get; private set; } = new();
+        public Dictionary<ModConfigurationKey, FieldInfo> ConfigKeyFields { get; private set; } = [];
 
 
 
