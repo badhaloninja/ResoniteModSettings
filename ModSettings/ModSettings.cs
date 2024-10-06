@@ -38,43 +38,43 @@ namespace ModSettings
 
         // Test Variables
         [AutoRegisterConfigKey] // Huh dummy can be used as a spacer, neat
-            private static readonly ModConfigurationKey<dummy> TEST_DUMMY = new("dummy", "---------------------------------------------------------------------------------------------------------------------------------");
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<bool> TEST_BOOL = new("testBool", "Test Boolean", () => true);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<string> TEST_STRING = new("testStr", "Test String", () => "Value");
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Key> TEST_KEYENUM = new("testKeyEnum", "Test Key Enum", () => Key.None);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Key> TEST_ENUM_NODEFAULT = new("testKeyEnumNoDefault", "Test Key Enum with no default");
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<int4> TEST_INTVECTOR = new("testIntVector", "Test int4", () => new int4(12), valueValidator: (value) => value.x == 12);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<float3x3> TEST_float3x3 = new("testFloat3x3", "Test float3x3", () => float3x3.Identity);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<colorX> TEST_COLOR = new("testColor", "Test Color", () => colorX.Blue);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Type> TEST_TYPE = new("testType", "Test Type", () => typeof(Button));
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Uri> TEST_URI = new("testUri", "Test Uri", () => null);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Uri> TEST_INTERNAL = new("testInternal", "Test internal access only key, must be http or https", () => new Uri("https://example.com"), true, (uri) => uri != null && (uri.Scheme == "https" || uri.Scheme == "http"));
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<Uri> TEST_INTERNAL_NO_NULL_CHECK = new("testInternalNoNull", "Test internal access only key, must be http or https, error thrown on null", () => new Uri("https://example.com"), true, (uri) => uri.Scheme == "https" || uri.Scheme == "http");
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<float2x2> TEST_NAN_VECTOR_INTERNAL = new("testNanVectorInternal", "Test internal access only NaN Vector for pr #11", () => new float2x2(float.NaN, float.NaN, float.NaN, float.NaN), true);
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<string> TEST_LOCAL_KEY = new("testLocaleKey", "Settings.LocaleSettings", () => "Locale Test", true, (str) => str == "Locale Test");
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<string> TEST_ERROR_ON_STR_EMPTY = new("testErrOnStringEmpty", "Test error on string empty", () => "Value", valueValidator: (str) =>
-            {
-                if (string.IsNullOrWhiteSpace(str))
-                    throw new ArgumentNullException(nameof(str));
-                return true;
-            });
-            [Range(0,1)]
-            [AutoRegisterConfigKey]
-            private static readonly ModConfigurationKey<float> TEST_SLIDER = new("testSlider", "Test Slider", () => 0f);
+        private static readonly ModConfigurationKey<dummy> TEST_DUMMY = new("dummy", "---------------------------------------------------------------------------------------------------------------------------------");
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<bool> TEST_BOOL = new("testBool", "Test Boolean", () => true);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<string> TEST_STRING = new("testStr", "Test String", () => "Value");
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Key> TEST_KEYENUM = new("testKeyEnum", "Test Key Enum", () => Key.None);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Key> TEST_ENUM_NODEFAULT = new("testKeyEnumNoDefault", "Test Key Enum with no default");
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<int4> TEST_INTVECTOR = new("testIntVector", "Test int4", () => new int4(12), valueValidator: (value) => value.x == 12);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<float3x3> TEST_float3x3 = new("testFloat3x3", "Test float3x3", () => float3x3.Identity);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<colorX> TEST_COLOR = new("testColor", "Test Color", () => colorX.Blue);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Type> TEST_TYPE = new("testType", "Test Type", () => typeof(Button));
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Uri> TEST_URI = new("testUri", "Test Uri", () => null);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Uri> TEST_INTERNAL = new("testInternal", "Test internal access only key, must be http or https", () => new Uri("https://example.com"), true, (uri) => uri != null && (uri.Scheme == "https" || uri.Scheme == "http"));
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<Uri> TEST_INTERNAL_NO_NULL_CHECK = new("testInternalNoNull", "Test internal access only key, must be http or https, error thrown on null", () => new Uri("https://example.com"), true, (uri) => uri.Scheme == "https" || uri.Scheme == "http");
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<float2x2> TEST_NAN_VECTOR_INTERNAL = new("testNanVectorInternal", "Test internal access only NaN Vector for pr #11", () => new float2x2(float.NaN, float.NaN, float.NaN, float.NaN), true);
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<string> TEST_LOCAL_KEY = new("testLocaleKey", "Settings.LocaleSettings", () => "Locale Test", true, (str) => str == "Locale Test");
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<string> TEST_ERROR_ON_STR_EMPTY = new("testErrOnStringEmpty", "Test error on string empty", () => "Value", valueValidator: (str) =>
+        {
+            if (string.IsNullOrWhiteSpace(str))
+                throw new ArgumentNullException(nameof(str));
+            return true;
+        });
+        [Range(0,1)]
+        [AutoRegisterConfigKey]
+        private static readonly ModConfigurationKey<float> TEST_SLIDER = new("testSlider", "Test Slider", () => 0f);
         //
 
         private static ModSettings Current;
@@ -130,8 +130,28 @@ namespace ModSettings
             public static void BuildScreenBackground(RadiantDashScreen instance, UIBuilder ui, bool nest = true) => throw new NotImplementedException("It's a stub");
         }
 
-        static class ModSettingsScreen
+        internal static class ModSettingsScreen
         {
+            private static readonly string[] _publicApiMethods =
+            {
+                "ModSettings_BuildModUi",
+                nameof(ModSettings_BuildDefaultField),
+                nameof(ModSettings_BuildDefaultFields),
+                nameof(ModSettings_GetHeight),
+                nameof(ModSettings_GetHighlightColor),
+            };
+            internal static readonly Dictionary<string, (MethodInfo, MethodInfo)> PublicApiMethods = new();
+            static ModSettingsScreen()
+            {
+                foreach (var method in _publicApiMethods)
+                {
+                    PublicApiMethods[method] = (
+                        AccessTools.DeclaredMethod(typeof(ModSettingsScreen), method),
+                        AccessTools.DeclaredMethod(typeof(ModSettingsScreen), method+"_Patch")                        
+                        );
+                }
+            }
+
             public static void GenerateModSettingsScreen(UserspaceScreensManager __instance)
             {
                 bool screenExists = CurrentScreen != null && !CurrentScreen.IsRemoved;
@@ -504,13 +524,37 @@ namespace ModSettings
                     configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.HasKeys", false);
                     return;
                 }
+                else
+                {
+                    configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.HasKeys", true);
+                }
 
-
+                if (mod.BuildCustomUI != null)
+                {
+                    mod.BuildCustomUI(ui);
+                }
+                else
+                {
+                    ModSettings_BuildDefaultFields(mod.Owner, ui);
+                }
+            }
+            #region Public API
+            /// <summary>
+            /// Builds all of the fields present in the config menu by default.<br/>
+            /// Use this method when you want to add something to the page before/after the default UI.
+            /// </summary>
+            public static void ModSettings_BuildDefaultFields(ResoniteModBase mod, UIBuilder ui)
+            {
+                var SelectedMod = $"{mod.Author}.{mod.Name}";
+                var config = mod.GetConfiguration();
+                var foundKeys = config.ConfigurationItemDefinitions.Where(key => config == Config || !key.InternalAccessOnly || Config.GetValue(SHOW_INTERNAL));
                 var createdItemCount = 0;
                 foreach (ModConfigurationKey key in foundKeys)
                 { // Generate field for every supported config
-                    var item = GenerateConfigFieldOfType(key.ValueType(), ui, SelectedMod, config, key);
-                    if(item == null) continue;
+                    var item = ModSettings_BuildDefaultField(mod, ui, key);
+
+                    // Should be unreachable
+                    if (item == null) continue;
 
 
                     item.ForeachComponentInChildren<Button>(button => button.RequireLockInToPress.Value = true);
@@ -531,9 +575,49 @@ namespace ModSettings
                     }
                     createdItemCount++;
                 }
-                if(createdItemCount != 0) configKeysRootSlot.TryWriteDynamicValue("Config/SelectedMod.HasKeys", true);
             }
-
+            public static bool ModSettings_BuildDefaultFields_Patch(ResoniteModBase mod, UIBuilder ui)
+            {
+                ModSettings_BuildDefaultFields(mod, ui);
+                return false;
+            }
+            /// <summary>
+            /// Builds a singular field using the provided <see cref="ModConfigurationKey"/><br/>
+            /// When building multiple fields you are expected to add a highlight to every other field with the color obtained using <see cref="ModSettings_GetHighlightColor"/><br/>
+            /// If the highlight color is null then you don't have to add highlighting
+            /// </summary>
+            public static Slot ModSettings_BuildDefaultField(ResoniteModBase mod, UIBuilder ui, ModConfigurationKey key)
+            {
+                var SelectedMod = $"{mod.Author}.{mod.Name}";
+                var config = mod.GetConfiguration();
+                return GenerateConfigFieldOfType(key.ValueType(), ui, SelectedMod, config, key);
+            }
+            public static bool ModSettings_BuildDefaultField_Patch(ref Slot __result, ResoniteModBase mod, UIBuilder ui, ModConfigurationKey key)
+            {
+                __result = ModSettings_BuildDefaultField(mod, ui, key);
+                return false;
+            }
+            /// <summary>
+            /// Gets the height that a single config item should be in your settings page.<br/>
+            /// This value can be changed on a per user basis in the ModSettings config.
+            /// </summary>
+            /// <returns></returns>
+            public static float ModSettings_GetHeight() => Config.GetValue(ITEM_HEIGHT);
+            public static bool ModSettings_GetHeight_Patch(ref float __result)
+            {
+                __result = ModSettings_GetHeight();
+                return false;
+            }
+            /// <summary>
+            /// Gets the color that every other item should have, null if items shouldn't be highlighted.
+            /// </summary>
+            public static colorX? ModSettings_GetHighlightColor() => Config.GetValue(HIGHLIGHT_ITEMS) ? Config.GetValue(HIGHLIGHT_TINT) : null;
+            public static bool ModSettings_GetHighlightColor_Patch(ref colorX? __result)
+            {
+                __result = ModSettings_GetHighlightColor();
+                return false;
+            }
+            #endregion
             public static Slot GenerateConfigFieldOfType(Type type, UIBuilder ui, string ModName, ModConfiguration config, ModConfigurationKey key)
             { // Generics go brr
                 var genMethod = generateConfigFieldMethod.MakeGenericMethod(type); // Convert to whatever type requested
@@ -884,7 +968,7 @@ namespace ModSettings
                 if (!key.TryComputeDefault(out object value))
                 {
                     // Resolve ambiguous extension method for GetDefaultValue
-                    value = ReflectionExtensions.GetDefaultValue(key.ValueType());//.GetDefaultValue();
+                    value = AccessTools.GetDefaultValue(key.ValueType());
                 }
 
                 configKeysRootSlot.TryWriteDynamicValueOfType(key.ValueType(), $"Config/{config.Owner.Name}.{key.Name}", value);
@@ -911,6 +995,5 @@ namespace ModSettings
                 configKeysRootSlot.SyncWriteDynamicValueType(@event.Key.ValueType(), ConfigKeyVariableNames[@event.Key], Config.GetValue(@event.Key));
             }
         }
-
     }
 }
