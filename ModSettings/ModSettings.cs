@@ -15,7 +15,7 @@ namespace ModSettings
     {
         public override string Name => "ResoniteModSettings";
         public override string Author => "badhaloninja";
-        public override string Version => "2.1.8";
+        public override string Version => "2.2.0";
         public override string Link => "https://github.com/badhaloninja/ResoniteModSettings";
 
         [AutoRegisterConfigKey]
@@ -35,8 +35,7 @@ namespace ModSettings
         [AutoRegisterConfigKey]
         private static readonly ModConfigurationKey<bool> SHOW_ALL_MODS = new("showAllMods", "Show mods without config items", () => true);
 
-
-        // Test Variables
+        #region Test Keys
         [AutoRegisterConfigKey] // Huh dummy can be used as a spacer, neat
         private static readonly ModConfigurationKey<dummy> TEST_DUMMY = new("dummy", "---------------------------------------------------------------------------------------------------------------------------------");
         [AutoRegisterConfigKey]
@@ -75,7 +74,7 @@ namespace ModSettings
         [Range(0,1)]
         [AutoRegisterConfigKey]
         private static readonly ModConfigurationKey<float> TEST_SLIDER = new("testSlider", "Test Slider", () => 0f);
-        //
+        #endregion
 
         private static ModSettings Current;
         private static ModConfiguration Config;
@@ -637,7 +636,7 @@ namespace ModSettings
 
                 ui.Style.MinHeight = Config.GetValue(ITEM_HEIGHT);
 
-                Slot root = ui.Empty("ConfigElement");
+                Slot root = ui.Empty(configName); // "ConfigElement"
                 if (key.InternalAccessOnly) root.ActiveSelf_Field.DriveFromVariable(ConfigKeyVariableNames[SHOW_INTERNAL]);
 
                 ui.NestInto(root);

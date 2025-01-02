@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../SharedModSettings.csproj" />
+  <PropertyGroup>
+    <ProjectGuid>{42776139-bf51-4831-8e0a-7e382efd93d7}</ProjectGuid>
+
+    <RootNamespace>ModSettingsTests</RootNamespace>
+    <AssemblyTitle>ModSettingsCustomUITest</AssemblyTitle>
+    <AssemblyName>$(AssemblyTitle)</AssemblyName>
+
+    
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+</Project>
