@@ -2,6 +2,7 @@
 using FrooxEngine.UIX;
 using Elements.Core;
 using HarmonyLib;
+using Renderite.Shared;
 using ResoniteModLoader;
 using System;
 using System.Collections.Generic;
@@ -132,14 +133,14 @@ namespace ModSettings
         internal static class ModSettingsScreen
         {
             private static readonly string[] _publicApiMethods =
-            {
+            [
                 "ModSettings_BuildModUi",
                 nameof(ModSettings_BuildDefaultField),
                 nameof(ModSettings_BuildDefaultFields),
                 nameof(ModSettings_GetHeight),
                 nameof(ModSettings_GetHighlightColor),
-            };
-            internal static readonly Dictionary<string, (MethodInfo, MethodInfo)> PublicApiMethods = new();
+            ];
+            internal static readonly Dictionary<string, (MethodInfo, MethodInfo)> PublicApiMethods = [];
             static ModSettingsScreen()
             {
                 foreach (var method in _publicApiMethods)
@@ -989,9 +990,9 @@ namespace ModSettings
         {
             if (configKeysRootSlot == null) return; // Skip if options root hasn't been generated yet
 
-            if (ConfigKeyVariableNames.ContainsKey(@event.Key))
+            if (ConfigKeyVariableNames.TryGetValue(@event.Key, out string value))
             {
-                configKeysRootSlot.SyncWriteDynamicValueType(@event.Key.ValueType(), ConfigKeyVariableNames[@event.Key], Config.GetValue(@event.Key));
+                configKeysRootSlot.SyncWriteDynamicValueType(@event.Key.ValueType(), value, Config.GetValue(@event.Key));
             }
         }
     }
